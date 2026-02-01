@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 3D Background Blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.8;
+            animation: float 10s infinite alternate;
+        }
+        .blob:nth-child(1) { width: 300px; height: 300px; background: #ff758c; top: -50px; left: -50px; }
+        .blob:nth-child(2) { width: 400px; height: 400px; background: #8ec5fc; bottom: -100px; right: -100px; animation-delay: -5s; }
+
+        /* Glassmorphism Card */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: var(--glass-shadow);
+            max-width: 90%;
+            width: 400px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Images */
+        .gif-container img {
+            width: 150px;
+            height: auto;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            mix-blend-mode: multiply; /* Helps blend white backgrounds of GIFs */
+        }
+
+        /* Typewriter Text */
+        .question {
+            font-size: 1.5rem;
+            color: #d63384;
+            font-weight: 800;
+            margin-bottom: 30px;
+            min-height: 1.5em; /* Prevents layout shift */
+        }
+
+        /* Buttons Container */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @media (min-width: 400px) {
+            .btn-group {
+                flex-direction: row;
+            }
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        #yesBtn {
+            background: var(--primary);
+            color: white;
+            z-index: 10;
+        }
+
+        #noBtn {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Success Message hidden by default */
+        .success-content {
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 40px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="blob"></div>
+    <div class="blob"></div>
+
+    <div class="card">
+        <div id="ask-state">
+            <div class="gif-container">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmM2Z29uYjZ4Y2p6czV2aGg2bmM2Z29uYjZ4Y2p6czV2aGg2bmM2ZyZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/MPtvv7hN36r9hQ98rN/giphy.gif" alt="Cute Bear">
+            </div>
+            
+            <div class="question" id="typewriter"></div>
+
+            <div class="btn-group">
+                <button id="yesBtn" onclick="acceptLove()">Yes</button>
+                <button id="noBtn" onclick="handleNo()">No</button>
+            </div>
+        </div>
+
+        <div id="success-state" class="success-content">
+            <div class="gif-container">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaDUwYnF6aGk5d2Z2bXQ0eDJ6aGk5d2Z2bXQ0eDJ6aGk5d2Z2bXQ0eCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/l4pTfx2qLSznacZiw/giphy.gif" alt="Happy Bear">
+            </div>
+            <h2 style="color: #ff4d6d; font-size: 2rem;">Yay! I knew it! ❤️</h2>
+            <p style="color: #555;">See you on the 14th!</p>
+        </div>
+    </div>
+
+    <script>
+        const questionText = "Will you be my Valentine?";
+        const typewriterElement = document.getElementById('typewriter');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const noTexts = [
+            "Are you sure?", 
+            "Really sure?", 
+            "Think again!", 
+            "Last chance!", 
+            "Surely not?", 
+            "You might regret this!", 
+            "Give it another thought!",
+            "I'm going to cry...",
+            "This could be a mistake!",
+            "Have a heart!"
+        ];
+        
+        let i = 0;
+        let noCount = 0;
+        let currentFontSize = 16;
+        let currentPadding = 12;
+
+        // 1. Typewriter Effect
+        function typeWriter() {
+            if (i < questionText.length) {
+                typewriterElement.innerHTML += questionText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }
+        }
+        
+        // Start typewriter when page loads
+        window.onload = typeWriter;
+
+        // 2. Handle "No" Button Logic
+        function handleNo() {
+            noCount++;
+            
+            // Change text randomly
+            const randomText = noTexts[Math.min(noCount, noTexts.length - 1)];
+            noBtn.innerText = randomText;
+
+            // Make Yes button grow
+            currentFontSize += 10; // Increase font size
+            currentPadding += 5;   // Increase padding
+            
+            yesBtn.style.fontSize = `${currentFontSize}px`;
+            yesBtn.style.padding = `${currentPadding}px ${currentPadding * 2}px`;
+            
+            // Update Text on Yes Button to be more persuasive
+            yesBtn.innerText = "YES! ❤️";
+        }
+
+        // 3. Handle "Yes" Button Logic
+        function acceptLove() {
+            // Trigger Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff4d6d', '#ff8fa3', '#ffffff']
+            });
+
+            // Switch UI states
+            document.getElementById('ask-state').style.display = 'none';
+            document.getElementById('success-state').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
